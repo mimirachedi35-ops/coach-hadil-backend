@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Coach Hadil — USOM Halaimiya Judo</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B3B3C">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --mat:#0B3B3C; --mat-2:#0F4A4B; --ink:#082725; --card:#0F3634; --card-2:#134240;
+    --line:#1D5250; --paper:#F4F1E6;
+    --aka:#C23B3B; --aka-bright:#E05555;
+    --green:#3FA772; --green-bright:#4FCB8C;
+    --gold:#D9A441; --gold-bright:#EFC066;
+    --text:#F2F1E8; --muted:#8FB3AC;
+    --belt-white:#F4F1E6; --belt-yellow:#E8C547; --belt-orange:#E08A3C; --belt-green:#3FA772; --belt-blue:#3E7FBF; --belt-brown:#8A5A3B; --belt-black:#1A1A1A;
+    --disp: 'Oswald', 'Arial Narrow', sans-serif;
+    --sans: 'Inter', -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--mat);color:var(--text);font-family:var(--sans);}
+  body{min-height:100vh;}
+  h1,h2,h3{font-family:var(--disp);font-weight:600;letter-spacing:0.3px;margin:0;}
+
+  .belt-stripe{height:6px;display:flex;width:100%;}
+  .belt-stripe span{flex:1;}
+  .b-white{background:var(--belt-white);} .b-yellow{background:var(--belt-yellow);}
+  .b-orange{background:var(--belt-orange);} .b-green{background:#3FA772;}
+  .b-blue{background:var(--belt-blue);} .b-brown{background:var(--belt-brown);} .b-black{background:var(--belt-black);}
+
+  #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(217,164,65,0.10), transparent 42%),
+      radial-gradient(circle at 88% 82%, rgba(194,59,59,0.10), transparent 45%),
+      var(--mat);}
+  .login-card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--line);border-radius:4px;
+    overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.45);}
+  .login-body{padding:34px 30px;}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:2.5px;color:var(--gold-bright);text-transform:uppercase;margin-bottom:10px;}
+  .login-title{font-size:30px;line-height:1.1;margin:0 0 4px;}
+  .login-sub{font-size:13px;color:var(--muted);margin:0 0 26px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .field input,.field select,.field textarea{width:100%;background:var(--mat-2);border:1px solid var(--line);
+    color:var(--text);border-radius:4px;padding:11px 13px;font-size:14.5px;font-family:var(--sans);outline:none;}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);}
+  .btn{width:100%;background:var(--gold);color:#241900;border:none;border-radius:4px;padding:12px 14px;
+    font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:0.5px;cursor:pointer;text-transform:uppercase;}
+  .btn:hover{background:var(--gold-bright);}
+  .btn-outline{background:transparent;border:1px solid var(--line);color:var(--text);}
+  .btn-outline:hover{border-color:var(--gold);background:rgba(217,164,65,0.08);}
+  .btn-danger{background:var(--aka);color:#fff;}
+  .btn-danger:hover{background:var(--aka-bright);}
+  .btn-sm{width:auto;padding:7px 13px;font-size:12px;border-radius:4px;}
+  .error-msg{color:var(--aka-bright);font-size:12.5px;margin-top:10px;display:none;}
+
+  #app{display:none;min-height:100vh;}
+  .topbar{position:sticky;top:0;z-index:30;background:rgba(11,59,60,0.94);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);}
+  .topbar-inner{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;max-width:1080px;margin:0 auto;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{width:42px;height:42px;border-radius:4px;background:var(--ink);border:2px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;font-size:13px;color:var(--gold-bright);}
+  .brand-text .t1{font-family:var(--disp);font-size:17px;font-weight:600;letter-spacing:0.3px;}
+  .brand-text .t2{font-size:10.5px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;}
+  .topbar-right{display:flex;gap:10px;align-items:center;}
+
+  .tabs{display:flex;gap:4px;padding:10px 20px 0;max-width:1080px;margin:0 auto;flex-wrap:wrap;overflow-x:auto;}
+  .tab{padding:9px 14px;border-radius:4px 4px 0 0;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--muted);
+    border:1px solid transparent;border-bottom:none;white-space:nowrap;font-family:var(--disp);letter-spacing:0.3px;text-transform:uppercase;}
+  .tab.active{color:var(--text);background:var(--card);border-color:var(--line);}
+  .tab:hover:not(.active){color:var(--text);}
+
+  .view{max-width:1080px;margin:0 auto;padding:20px;display:none;}
+  .view.active{display:block;}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:22px;margin-bottom:16px;}
+  .panel-title{font-family:var(--disp);font-size:16px;font-weight:600;margin:0 0 3px;letter-spacing:0.3px;}
+  .panel-sub{font-size:12px;color:var(--muted);margin:0 0 18px;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+  @media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+  @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr);}}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:16px 14px;}
+  .stat .val{font-family:var(--mono);font-size:25px;font-weight:700;color:var(--gold-bright);}
+  .stat .lbl{font-size:10.5px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.4px;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:right;color:var(--muted);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:0.4px;
+     padding:9px 8px;border-bottom:1px solid var(--line);}
+  td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tr.row-click{cursor:pointer;}
+  tr.row-click:hover td{background:rgba(217,164,65,0.06);}
+
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.3px;}
+  .badge-poussins{background:var(--belt-white);color:#333;}
+  .badge-benjamins{background:var(--belt-yellow);color:#332900;}
+  .badge-minimes{background:var(--belt-orange);color:#331900;}
+  .badge-cadets{background:#3FA772;color:#03150C;}
+  .badge-juniors{background:var(--belt-blue);color:#fff;}
+  .badge-seniors{background:var(--belt-brown);color:#fff;}
+  .pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10.5px;font-weight:700;}
+  .pill-oui{background:rgba(63,167,114,0.18);color:var(--green-bright);}
+  .pill-non{background:rgba(194,59,59,0.18);color:var(--aka-bright);}
+
+  .empty-state{text-align:center;padding:50px 20px;color:var(--muted);}
+  .empty-state .big{font-size:34px;margin-bottom:10px;}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--gold);color:#241900;
+    padding:12px 22px;border-radius:4px;font-size:13.5px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.4);
+    z-index:100;opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;font-family:var(--disp);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+
+  .fab{position:fixed;bottom:24px;right:24px;background:var(--gold);color:#241900;border:none;border-radius:50%;
+    width:56px;height:56px;font-size:26px;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,0.4);z-index:40;}
+  .fab:hover{background:var(--gold-bright);}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(4,15,14,0.75);z-index:60;
+    align-items:flex-start;justify-content:center;overflow-y:auto;padding:30px 16px;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--card);border:1px solid var(--line);border-radius:4px;max-width:640px;width:100%;
+    padding:26px;margin-bottom:40px;}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+  .modal-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;}
+  .section-label{font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-bright);font-family:var(--mono);
+    margin:20px 0 10px;padding-top:12px;border-top:1px solid var(--line);}
+  .section-label:first-child{margin-top:0;padding-top:0;border-top:none;}
+  .radio-row{display:flex;gap:16px;padding-top:4px;flex-wrap:wrap;}
+  .radio-opt{display:flex;align-items:center;gap:6px;font-size:13px;}
+  .checkbox-row{display:flex;flex-direction:column;gap:8px;padding-top:4px;}
+  .checkbox-opt{display:flex;align-items:center;gap:8px;font-size:13px;}
+
+  .photo-box{width:96px;height:96px;border-radius:4px;background:var(--mat-2);border:1px dashed var(--line);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+  .photo-box img{width:100%;height:100%;object-fit:cover;}
+
+  .pay-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;}
+  .pay-cell{border-radius:4px;padding:10px 6px;text-align:center;cursor:pointer;border:1px solid var(--line);
+    background:var(--mat-2);transition:transform .1s;}
+  .pay-cell:hover{transform:scale(1.03);}
+  .pay-cell.paid{background:rgba(63,167,114,0.22);border-color:var(--green);}
+  .pay-cell.late{background:rgba(194,59,59,0.22);border-color:var(--aka);}
+  .pay-cell.disabled{opacity:0.35;cursor:default;}
+  .pay-cell.disabled:hover{transform:none;}
+  .pay-cell .m{font-family:var(--disp);font-size:12px;letter-spacing:0.3px;}
+  .pay-cell .s{font-size:9.5px;color:var(--muted);margin-top:3px;}
+  .pay-cell.paid .s{color:var(--green-bright);}
+  .pay-cell.late .s{color:var(--aka-bright);}
+
+  #printArea{display:none;}
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{display:block;position:absolute;top:0;left:0;width:100%;}
+  }
+  .pprint{font-family:Arial, sans-serif;color:#000;padding:20px;}
+  .pprint h1{font-size:17px;text-align:center;margin:0 0 2px;}
+  .pprint .sub{text-align:center;font-size:11px;margin-bottom:16px;color:#333;}
+  .pprint table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .pprint th,.pprint td{border:1px solid #999;padding:5px 7px;text-align:right;}
+  .pprint th{background:#eee;}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="belt-stripe">
+      <span class="b-white"></span><span class="b-yellow"></span><span class="b-orange"></span>
+      <span class="b-green"></span><span class="b-blue"></span><span class="b-brown"></span><span class="b-black"></span>
+    </div>
+    <div class="login-body">
+      <div class="eyebrow">Accès privé</div>
+      <h1 class="login-title">Coach Hadil</h1>
+      <p class="login-sub">Club USOM Halaimiya — Judo. Gestion des judokas, cotisations et dossiers.</p>
+      <div class="field">
+        <label>Code d'accès</label>
+        <input type="password" id="loginCode" placeholder="••••••••">
+      </div>
+      <button class="btn" onclick="tryLogin()">Entrer</button>
+      <div class="error-msg" id="loginError">Code incorrect.</div>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="belt-stripe">
+      <span class="b-white"></span><span class="b-yellow"></span><span class="b-orange"></span>
+      <span class="b-green"></span><span class="b-blue"></span><span class="b-brown"></span><span class="b-black"></span>
+    </div>
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">CH</div>
+        <div class="brand-text">
+          <div class="t1">Coach Hadil</div>
+          <div class="t2">USOM Halaimiya — Judo</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-outline btn-sm" onclick="logout()">Quitter</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-tab="judokas" onclick="switchTab('judokas')">Judokas</div>
+      <div class="tab" data-tab="assurance" onclick="switchTab('assurance')">Assurance</div>
+      <div class="tab" data-tab="stats" onclick="switchTab('stats')">Statistiques</div>
+      <div class="tab" data-tab="reglages" onclick="switchTab('reglages')">Réglages</div>
+    </div>
+  </div>
+
+  <div class="view active" id="view-judokas">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <div>
+          <div class="panel-title">Liste des judokas</div>
+          <p class="panel-sub" style="margin:2px 0 0;">Cliquez sur une judoka pour voir sa fiche et ses cotisations.</p>
+        </div>
+        <input type="text" id="searchJudoka" placeholder="Rechercher un nom..." oninput="renderJudokas()"
+          style="background:var(--mat-2);border:1px solid var(--line);color:var(--text);border-radius:4px;padding:9px 12px;font-size:13px;">
+      </div>
+      <div id="judokasTableWrap"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-assurance">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <div>
+          <div class="panel-title">Judokas assurées</div>
+          <p class="panel-sub" style="margin:2px 0 0;">Liste imprimable des judokas ayant réglé leur assurance.</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="printAssurance()">🖨 Imprimer la liste</button>
+      </div>
+      <div id="assuranceTableWrap"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-stats">
+    <div class="stats">
+      <div class="stat"><div class="val" id="statTotal">0</div><div class="lbl">Judokas inscrites</div></div>
+      <div class="stat"><div class="val" id="statDossierOk">0</div><div class="lbl">Dossiers complets</div></div>
+      <div class="stat"><div class="val" id="statRevenuMois">0</div><div class="lbl">Revenu ce mois (DA)</div></div>
+      <div class="stat"><div class="val" id="statRevenuAnnuel">0</div><div class="lbl">Revenu annuel (DA)</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Détail mensuel — saison en cours</div>
+      <p class="panel-sub">Nombre de judokas inscrites et cotisations réglées, mois par mois.</p>
+      <div id="statsTableWrap"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-reglages">
+    <div class="panel">
+      <div class="panel-title">Réglages</div>
+      <p class="panel-sub">Montant de la cotisation mensuelle utilisé pour le calcul des revenus.</p>
+      <div class="grid2">
+        <div class="field">
+          <label>Cotisation mensuelle (DA)</label>
+          <input type="number" id="cotisationInput" min="0">
+        </div>
+      </div>
+      <button class="btn btn-outline" style="width:auto;" onclick="saveCotisation()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<button class="fab" id="fabAdd" style="display:none;" onclick="openJudokaModal()">+</button>
+
+<div class="modal-overlay" id="judokaModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="modalTitle" style="font-size:18px;">Nouvelle judoka</h2>
+      <button class="modal-close" onclick="closeJudokaModal()">✕</button>
+    </div>
+
+    <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:6px;">
+      <div class="photo-box" id="photoBox">📷</div>
+      <div style="flex:1;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;">Photo de la judoka</label>
+        <input type="file" id="photoInput" accept="image/*" capture="environment" onchange="handlePhotoInput(event)"
+          style="font-size:12px;color:var(--text);">
+      </div>
+    </div>
+
+    <div class="section-label">Identité</div>
+    <div class="grid2">
+      <div class="field"><label>Nom *</label><input id="f_nom"></div>
+      <div class="field"><label>Prénom *</label><input id="f_prenom"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Date de naissance *</label><input type="date" id="f_dateNaissance" onchange="updateCategoriePreview()"></div>
+      <div class="field"><label>Lieu de naissance</label><input id="f_lieuNaissance"></div>
+    </div>
+    <div class="field">
+      <label>Catégorie (calculée automatiquement)</label>
+      <div id="categoriePreview" style="background:var(--mat-2);border:1px dashed var(--line);
+        border-radius:4px;padding:10px 13px;font-size:13px;color:var(--gold-bright);">—</div>
+    </div>
+
+    <div class="section-label">Tuteur</div>
+    <div class="grid2">
+      <div class="field"><label>Nom et prénom du tuteur</label><input id="f_tuteurNom"></div>
+      <div class="field"><label>Téléphone du tuteur</label><input id="f_tuteurTel"></div>
+    </div>
+
+    <div class="section-label">Suivi administratif</div>
+    <div class="grid2">
+      <div class="field"><label>Date de la première séance *</label><input type="date" id="f_dateDebut"></div>
+      <div class="field"><label>Assurance réglée ?</label>
+        <div class="radio-row">
+          <label class="radio-opt"><input type="radio" name="f_assurance" value="Oui"> Oui</label>
+          <label class="radio-opt"><input type="radio" name="f_assurance" value="Non" checked> Non</label>
+        </div>
+      </div>
+    </div>
+    <div class="field"><label>Dossier complet ?</label>
+      <div class="radio-row">
+        <label class="radio-opt"><input type="radio" name="f_dossier" value="Oui" onchange="toggleDossierManquant()"> Oui</label>
+        <label class="radio-opt"><input type="radio" name="f_dossier" value="Non" checked onchange="toggleDossierManquant()"> Non</label>
+      </div>
+    </div>
+    <div class="field" id="dossierManquantWrap">
+      <label>Élément(s) manquant(s)</label>
+      <div class="checkbox-row">
+        <label class="checkbox-opt"><input type="checkbox" id="dm_fiche"> Fiche d'inscription</label>
+        <label class="checkbox-opt"><input type="checkbox" id="dm_photos"> Photos</label>
+        <label class="checkbox-opt"><input type="checkbox" id="dm_certificat"> Certificat de naissance</label>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn" onclick="saveJudoka()">Enregistrer</button>
+      <button class="btn btn-danger btn-sm" id="deleteJudokaBtn" style="display:none;" onclick="deleteJudoka()">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="payModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="payModalTitle" style="font-size:18px;">Cotisations</h2>
+      <button class="modal-close" onclick="closePayModal()">✕</button>
+    </div>
+    <p class="panel-sub" style="margin-bottom:16px;">Cliquez sur un mois pour marquer la cotisation comme réglée. Un mois passé non réglé apparaît en rouge.</p>
+    <div class="pay-grid" id="payGrid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="printArea"></div>
+
+<script>
+const API = '';
+const SEASON_MONTHS = [
+  {key:'sept',label:'Sept.',m:9},{key:'oct',label:'Oct.',m:10},{key:'nov',label:'Nov.',m:11},
+  {key:'dec',label:'Déc.',m:12},{key:'jan',label:'Jan.',m:1},{key:'fev',label:'Fév.',m:2},
+  {key:'mar',label:'Mars',m:3},{key:'avr',label:'Avr.',m:4},{key:'mai',label:'Mai',m:5},
+  {key:'juin',label:'Juin',m:6},{key:'juil',label:'Juil.',m:7}
+];
+
+let clubData = { cotisation: 1500, nextId: 1, judokas: [] };
+let currentPayJudokaId = null;
+let pendingPhotoDataUrl = null;
+let editingJudokaId = null;
+let authToken = localStorage.getItem('ch_token') || '';
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+async function api(path, opts={}){
+  const headers = Object.assign({'Content-Type':'application/json'}, opts.headers||{});
+  if(authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  const res = await fetch(API + path, Object.assign({}, opts, {headers}));
+  let data = null;
+  try{ data = await res.json(); }catch(e){}
+  if(!res.ok){ throw new Error((data && data.error) || 'Erreur serveur'); }
+  return data;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if(authToken) enterApp();
+  if('serviceWorker' in navigator){ /* pas de service worker requis pour l'installation de base */ }
+});
+
+async function tryLogin(){
+  const code = document.getElementById('loginCode').value.trim();
+  const err = document.getElementById('loginError');
+  err.style.display = 'none';
+  try{
+    const data = await api('/api/login', {method:'POST', body: JSON.stringify({code})});
+    authToken = data.token;
+    localStorage.setItem('ch_token', authToken);
+    enterApp();
+  }catch(e){
+    err.textContent = e.message; err.style.display = 'block';
+  }
+}
+
+function enterApp(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('fabAdd').style.display = 'flex';
+  document.getElementById('fabAdd').style.alignItems = 'center';
+  document.getElementById('fabAdd').style.justifyContent = 'center';
+  loadClubData();
+}
+
+function logout(){
+  localStorage.removeItem('ch_token');
+  authToken = '';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('fabAdd').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginCode').value = '';
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.getElementById('fabAdd').style.display = (name==='judokas') ? 'flex' : 'none';
+  if(name==='judokas') renderJudokas();
+  if(name==='assurance') renderAssurance();
+  if(name==='stats') renderStats();
+  if(name==='reglages') document.getElementById('cotisationInput').value = clubData.cotisation;
+}
+
+async function loadClubData(){
+  try{
+    clubData = await api('/api/data', {method:'GET'});
+  }catch(e){
+    showToast(e.message);
+  }
+  renderJudokas();
+}
+
+async function saveClubData(){
+  try{
+    await api('/api/data', {method:'PUT', body: JSON.stringify(clubData)});
+  }catch(e){
+    showToast(e.message);
+  }
+}
+
+function getCategorie(dateNaissanceStr){
+  if(!dateNaissanceStr) return '';
+  const birth = new Date(dateNaissanceStr);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  if(age<=10) return 'Poussins';
+  if(age<=12) return 'Benjamins';
+  if(age<=14) return 'Minimes';
+  if(age<=16) return 'Cadets';
+  if(age<=19) return 'Juniors';
+  return 'Seniors';
+}
+function categorieClass(cat){
+  return {Poussins:'badge-poussins',Benjamins:'badge-benjamins',Minimes:'badge-minimes',
+    Cadets:'badge-cadets',Juniors:'badge-juniors',Seniors:'badge-seniors'}[cat] || '';
+}
+
+function updateCategoriePreview(){
+  const cat = getCategorie(document.getElementById('f_dateNaissance').value);
+  document.getElementById('categoriePreview').textContent = cat || '—';
+}
+
+function toggleDossierManquant(){
+  const val = document.querySelector('input[name="f_dossier"]:checked').value;
+  document.getElementById('dossierManquantWrap').style.display = (val==='Non') ? 'block' : 'none';
+}
+
+function fmtDate(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString('fr-FR'); }catch(e){ return d; } }
+
+function renderJudokas(){
+  const wrap = document.getElementById('judokasTableWrap');
+  const q = (document.getElementById('searchJudoka')?.value || '').toLowerCase().trim();
+  let list = clubData.judokas.slice().sort((a,b)=> (a.nom||'').localeCompare(b.nom||''));
+  if(q) list = list.filter(j => (j.nom+' '+j.prenom).toLowerCase().includes(q));
+  if(list.length===0){
+    wrap.innerHTML = '<div class="empty-state"><div class="big">🥋</div>Aucune judoka enregistrée. Appuyez sur + pour en ajouter une.</div>';
+    return;
+  }
+  let rows = list.map(j => {
+    const cat = getCategorie(j.dateNaissance);
+    return `<tr class="row-click" onclick="openJudokaModal('${j.id}')">
+      <td>${j.nom} ${j.prenom}</td>
+      <td><span class="badge ${categorieClass(cat)}">${cat}</span></td>
+      <td><span class="pill ${j.assurance==='Oui'?'pill-oui':'pill-non'}">${j.assurance||'Non'}</span></td>
+      <td><span class="pill ${j.dossierComplet==='Oui'?'pill-oui':'pill-non'}">${j.dossierComplet==='Oui'?'Complet':'Incomplet'}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); openPayModal('${j.id}')">💳 Cotisations</button></td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = `<table><thead><tr><th>Judoka</th><th>Catégorie</th><th>Assurance</th><th>Dossier</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function openJudokaModal(id){
+  editingJudokaId = id || null;
+  pendingPhotoDataUrl = null;
+  document.getElementById('modalTitle').textContent = id ? 'Fiche de la judoka' : 'Nouvelle judoka';
+  document.getElementById('deleteJudokaBtn').style.display = id ? 'inline-block' : 'none';
+  document.getElementById('photoBox').innerHTML = '📷';
+
+  if(id){
+    const j = clubData.judokas.find(x=>x.id===id);
+    document.getElementById('f_nom').value = j.nom||'';
+    document.getElementById('f_prenom').value = j.prenom||'';
+    document.getElementById('f_dateNaissance').value = j.dateNaissance||'';
+    document.getElementById('f_lieuNaissance').value = j.lieuNaissance||'';
+    document.getElementById('f_tuteurNom').value = j.tuteurNom||'';
+    document.getElementById('f_tuteurTel').value = j.tuteurTel||'';
+    document.getElementById('f_dateDebut').value = j.dateDebut||'';
+    document.querySelector(`input[name="f_assurance"][value="${j.assurance||'Non'}"]`).checked = true;
+    document.querySelector(`input[name="f_dossier"][value="${j.dossierComplet||'Non'}"]`).checked = true;
+    const dm = j.dossierManquant || [];
+    document.getElementById('dm_fiche').checked = dm.includes('fiche');
+    document.getElementById('dm_photos').checked = dm.includes('photos');
+    document.getElementById('dm_certificat').checked = dm.includes('certificat');
+    updateCategoriePreview();
+    toggleDossierManquant();
+    document.getElementById('photoBox').innerHTML = `<img src="/uploads/${id}.jpg?t=${Date.now()}" onerror="this.parentNode.innerHTML='📷'">`;
+  } else {
+    ['f_nom','f_prenom','f_dateNaissance','f_lieuNaissance','f_tuteurNom','f_tuteurTel','f_dateDebut'].forEach(id2=>document.getElementById(id2).value='');
+    document.querySelector('input[name="f_assurance"][value="Non"]').checked = true;
+    document.querySelector('input[name="f_dossier"][value="Non"]').checked = true;
+    document.getElementById('dm_fiche').checked=false;
+    document.getElementById('dm_photos').checked=false;
+    document.getElementById('dm_certificat').checked=false;
+    document.getElementById('categoriePreview').textContent = '—';
+    toggleDossierManquant();
+  }
+  document.getElementById('judokaModalOverlay').classList.add('show');
+}
+function closeJudokaModal(){ document.getElementById('judokaModalOverlay').classList.remove('show'); }
+
+function handlePhotoInput(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const maxW = 400;
+      const scale = Math.min(1, maxW/img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width*scale; canvas.height = img.height*scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      pendingPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.72);
+      document.getElementById('photoBox').innerHTML = `<img src="${pendingPhotoDataUrl}">`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveJudoka(){
+  const nom = document.getElementById('f_nom').value.trim();
+  const prenom = document.getElementById('f_prenom').value.trim();
+  const dateNaissance = document.getElementById('f_dateNaissance').value;
+  const dateDebut = document.getElementById('f_dateDebut').value;
+  if(!nom || !prenom || !dateNaissance || !dateDebut){
+    showToast("Nom, prénom, date de naissance et date de première séance sont obligatoires");
+    return;
+  }
+  const dossierComplet = document.querySelector('input[name="f_dossier"]:checked').value;
+  const dossierManquant = [];
+  if(dossierComplet==='Non'){
+    if(document.getElementById('dm_fiche').checked) dossierManquant.push('fiche');
+    if(document.getElementById('dm_photos').checked) dossierManquant.push('photos');
+    if(document.getElementById('dm_certificat').checked) dossierManquant.push('certificat');
+  }
+
+  let id = editingJudokaId;
+  let judoka;
+  if(id){
+    judoka = clubData.judokas.find(x=>x.id===id);
+  } else {
+    id = 'j_' + (clubData.nextId++);
+    judoka = { id, paiements:{} };
+    clubData.judokas.push(judoka);
+  }
+  judoka.nom = nom; judoka.prenom = prenom; judoka.dateNaissance = dateNaissance;
+  judoka.lieuNaissance = document.getElementById('f_lieuNaissance').value.trim();
+  judoka.tuteurNom = document.getElementById('f_tuteurNom').value.trim();
+  judoka.tuteurTel = document.getElementById('f_tuteurTel').value.trim();
+  judoka.dateDebut = dateDebut;
+  judoka.assurance = document.querySelector('input[name="f_assurance"]:checked').value;
+  judoka.dossierComplet = dossierComplet;
+  judoka.dossierManquant = dossierManquant;
+
+  await saveClubData();
+  if(pendingPhotoDataUrl){
+    try{ await api('/api/judokas/'+id+'/photo', {method:'POST', body: JSON.stringify({dataUrl: pendingPhotoDataUrl})}); }catch(e){}
+  }
+  showToast(editingJudokaId ? "Fiche mise à jour" : "Judoka ajoutée");
+  closeJudokaModal();
+  renderJudokas();
+}
+
+async function deleteJudoka(){
+  if(!editingJudokaId) return;
+  clubData.judokas = clubData.judokas.filter(x=>x.id!==editingJudokaId);
+  await saveClubData();
+  try{ await api('/api/judokas/'+editingJudokaId+'/photo', {method:'DELETE'}); }catch(e){}
+  showToast("Judoka supprimée");
+  closeJudokaModal();
+  renderJudokas();
+}
+
+function getSeasonMonthsFor(dateDebutStr){
+  const dateDebut = new Date(dateDebutStr);
+  const startMonth = dateDebut.getMonth()+1;
+  const seasonStartYear = startMonth>=9 ? dateDebut.getFullYear() : dateDebut.getFullYear()-1;
+  return SEASON_MONTHS.map(mo=>{
+    const y = mo.m>=9 ? seasonStartYear : seasonStartYear+1;
+    const applicable = (y>dateDebut.getFullYear()) || (y===dateDebut.getFullYear() && mo.m>=startMonth);
+    let dueDay = dateDebut.getDate();
+    const lastDay = new Date(y, mo.m, 0).getDate();
+    if(dueDay>lastDay) dueDay = lastDay;
+    const dueDate = new Date(y, mo.m-1, dueDay);
+    return {...mo, y, applicable, dueDate};
+  });
+}
+
+function openPayModal(id){
+  currentPayJudokaId = id;
+  const j = clubData.judokas.find(x=>x.id===id);
+  document.getElementById('payModalTitle').textContent = 'Cotisations — ' + j.nom + ' ' + j.prenom;
+  renderPayGrid();
+  document.getElementById('payModalOverlay').classList.add('show');
+}
+function closePayModal(){ document.getElementById('payModalOverlay').classList.remove('show'); renderJudokas(); }
+
+function renderPayGrid(){
+  const j = clubData.judokas.find(x=>x.id===currentPayJudokaId);
+  if(!j) return;
+  const months = getSeasonMonthsFor(j.dateDebut);
+  const today = new Date();
+  const grid = document.getElementById('payGrid');
+  grid.innerHTML = months.map(mo=>{
+    if(!mo.applicable){
+      return `<div class="pay-cell disabled"><div class="m">${mo.label}</div><div class="s">—</div></div>`;
+    }
+    const paid = !!(j.paiements && j.paiements[mo.key]);
+    const late = !paid && today > mo.dueDate;
+    const cls = paid ? 'paid' : (late ? 'late' : '');
+    const statusText = paid ? 'Réglé' : (late ? 'Retard' : 'À venir');
+    return `<div class="pay-cell ${cls}" onclick="togglePaiement('${mo.key}')">
+      <div class="m">${mo.label}</div><div class="s">${statusText}</div></div>`;
+  }).join('');
+}
+
+async function togglePaiement(key){
+  const j = clubData.judokas.find(x=>x.id===currentPayJudokaId);
+  if(!j) return;
+  if(!j.paiements) j.paiements = {};
+  j.paiements[key] = !j.paiements[key];
+  await saveClubData();
+  renderPayGrid();
+}
+
+function renderAssurance(){
+  const wrap = document.getElementById('assuranceTableWrap');
+  const list = clubData.judokas.filter(j=>j.assurance==='Oui').sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+  if(list.length===0){
+    wrap.innerHTML = '<div class="empty-state"><div class="big">🛡️</div>Aucune judoka assurée pour le moment.</div>';
+    return;
+  }
+  let rows = list.map(j=>`
+    <tr><td>${j.nom}</td><td>${j.prenom}</td><td>${j.tuteurNom||'—'}</td>
+      <td>${fmtDate(j.dateNaissance)}${j.lieuNaissance?(' — '+j.lieuNaissance):''}</td></tr>`).join('');
+  wrap.innerHTML = `<table><thead><tr><th>Nom</th><th>Prénom</th><th>Père / Tuteur</th><th>Date et lieu de naissance</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function printAssurance(){
+  const list = clubData.judokas.filter(j=>j.assurance==='Oui').sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+  let rows = list.map(j=>`
+    <tr><td>${j.nom}</td><td>${j.prenom}</td><td>${j.tuteurNom||'—'}</td>
+      <td>${fmtDate(j.dateNaissance)}${j.lieuNaissance?(' — '+j.lieuNaissance):''}</td></tr>`).join('');
+  document.getElementById('printArea').innerHTML = `
+    <div class="pprint">
+      <h1>Liste des judokas assurées</h1>
+      <div class="sub">USOM Halaimiya — Judo — Coach Hadil — ${new Date().toLocaleDateString('fr-FR')}</div>
+      <table><thead><tr><th>Nom</th><th>Prénom</th><th>Père / Tuteur</th><th>Date et lieu de naissance</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+    </div>`;
+  window.print();
+}
+
+function renderStats(){
+  document.getElementById('statTotal').textContent = clubData.judokas.length;
+  document.getElementById('statDossierOk').textContent = clubData.judokas.filter(j=>j.dossierComplet==='Oui').length;
+
+  const cotis = clubData.cotisation || 0;
+  const now = new Date();
+  const currentMonthKey = SEASON_MONTHS.find(m=>m.m===(now.getMonth()+1))?.key;
+
+  let monthStats = SEASON_MONTHS.map(mo=>{
+    let inscrites = 0, payes = 0;
+    clubData.judokas.forEach(j=>{
+      const months = getSeasonMonthsFor(j.dateDebut);
+      const mm = months.find(x=>x.key===mo.key);
+      if(mm && mm.applicable){
+        inscrites++;
+        if(j.paiements && j.paiements[mo.key]) payes++;
+      }
+    });
+    return {...mo, inscrites, payes, revenu: payes*cotis};
+  });
+
+  const revenuAnnuel = monthStats.reduce((s,m)=>s+m.revenu,0);
+  const revenuMois = monthStats.find(m=>m.key===currentMonthKey)?.revenu || 0;
+  document.getElementById('statRevenuMois').textContent = revenuMois.toLocaleString('fr-FR');
+  document.getElementById('statRevenuAnnuel').textContent = revenuAnnuel.toLocaleString('fr-FR');
+
+  const rows = monthStats.map(m=>`
+    <tr><td>${m.label}</td><td>${m.inscrites}</td><td>${m.payes}</td><td>${m.revenu.toLocaleString('fr-FR')} DA</td></tr>`).join('');
+  document.getElementById('statsTableWrap').innerHTML = `
+    <table><thead><tr><th>Mois</th><th>Judokas inscrites</th><th>Cotisations réglées</th><th>Revenu</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+
+async function saveCotisation(){
+  const v = parseInt(document.getElementById('cotisationInput').value, 10);
+  clubData.cotisation = isNaN(v) ? 0 : v;
+  await saveClubData();
+  showToast("Cotisation mise à jour");
+}
+</script>
+</body>
+</html>
