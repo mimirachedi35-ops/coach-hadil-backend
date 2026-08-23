@@ -1,41 +1,44 @@
 // ============================================================
 // Coach Hadil - Gestion du club de judo (USOM Halaimiya)
-// Serveur independant : Node.js + fichier JSON + photos locales
+// Stockage : MongoDB Atlas (persistant, gratuit, sans limite de duree)
 // ============================================================
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const path = require('path');
-const fs = require('fs');
+const { MongoClient } = require('mongodb');
 
 const PORT = process.env.PORT || 3000;
 const ACCESS_CODE = process.env.ACCESS_CODE || 'judoom35';
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
-const DATA_FILE = path.join(__dirname, 'judo-data.json');
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR);
-
-function loadData() {
-  if (!fs.existsSync(DATA_FILE)) {
-    return { cotisation: 1500, nextId: 1, judokas: [] };
+let db;
+async function connectDB() {
+  if (!MONGODB_URI) {
+    console.error('MONGODB_URI manquant dans les variables d\'environnement.');
+    return;
   }
-  try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-  } catch (e) {
-    console.error('Erreur de lecture des donnees, fichier vide cree.', e);
-    return { cotisation: 1500, nextId: 1, judokas: [] };
-  }
+  const client = new MongoClient(MONGODB_URI);
+  await client.connect();
+  db = client.db('coachhadil');
+  console.log('Connecte a MongoDB Atlas.');
 }
-function saveData(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+connectDB().catch(err => console.error('Erreur de connexion MongoDB :', err.message));
+
+async function loadData() {
+  const doc = await db.collection('club').findOne({ _id: 'main' });
+  return doc || { _id: 'main', cotisation: 1500, nextId: 1, judokas: [] };
+}
+async function saveData(data) {
+  data._id = 'main';
+  await db.collection('club').replaceOne({ _id: 'main' }, data, { upsert: true });
 }
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); // les photos passent en base64
-app.use('/uploads', express.static(UPLOADS_DIR));
+app.use(express.json({ limit: '15mb' })); // les photos passent en base64
 app.use(express.static(path.join(__dirname, 'public')));
 
 function authRequired(req, res, next) {
@@ -57,37 +60,29 @@ app.post('/api/login', (req, res) => {
   res.json({ token });
 });
 
-app.get('/api/data', authRequired, (req, res) => {
-  res.json(loadData());
+app.get('/api/data', authRequired, async (req, res) => {
+  try {
+    const data = await loadData();
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: 'Erreur base de donnees : ' + e.message });
+  }
 });
 
-app.put('/api/data', authRequired, (req, res) => {
+app.put('/api/data', authRequired, async (req, res) => {
   const body = req.body || {};
   if (!Array.isArray(body.judokas)) {
     return res.status(400).json({ error: 'Donnees invalides.' });
   }
-  saveData({ cotisation: body.cotisation || 0, nextId: body.nextId || 1, judokas: body.judokas });
-  res.json({ ok: true });
-});
-
-app.post('/api/judokas/:id/photo', authRequired, (req, res) => {
-  const { dataUrl } = req.body || {};
-  if (!dataUrl || !dataUrl.startsWith('data:image')) {
-    return res.status(400).json({ error: 'Image invalide.' });
+  try {
+    await saveData({ cotisation: body.cotisation || 0, nextId: body.nextId || 1, judokas: body.judokas });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Erreur base de donnees : ' + e.message });
   }
-  const base64 = dataUrl.split(',')[1];
-  const buffer = Buffer.from(base64, 'base64');
-  fs.writeFileSync(path.join(UPLOADS_DIR, req.params.id + '.jpg'), buffer);
-  res.json({ ok: true });
 });
 
-app.delete('/api/judokas/:id/photo', authRequired, (req, res) => {
-  const p = path.join(UPLOADS_DIR, req.params.id + '.jpg');
-  if (fs.existsSync(p)) fs.unlinkSync(p);
-  res.json({ ok: true });
-});
-
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+app.get('/api/health', (req, res) => res.json({ ok: true, dbConnected: !!db }));
 
 app.listen(PORT, () => {
   console.log(`Serveur Coach Hadil demarre sur http://localhost:${PORT}`);
