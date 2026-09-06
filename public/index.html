@@ -180,6 +180,9 @@
       <span class="b-green"></span><span class="b-blue"></span><span class="b-brown"></span><span class="b-black"></span>
     </div>
     <div class="login-body">
+      <div style="text-align:center;margin-bottom:18px;">
+        <img src="/coach-photo.jpg" alt="Coach Hadil" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);box-shadow:0 8px 24px rgba(0,0,0,0.4);"/>
+      </div>
       <div class="eyebrow">Accès privé</div>
       <h1 class="login-title">Coach Hadil</h1>
       <p class="login-sub">Club USOM Halaimiya — Judo. Gestion des judokas, cotisations et dossiers.</p>
@@ -213,6 +216,7 @@
     </div>
     <div class="tabs">
       <div class="tab active" data-tab="judokas" onclick="switchTab('judokas')">Judokas</div>
+      <div class="tab" data-tab="rappels" onclick="switchTab('rappels')">Rappels</div>
       <div class="tab" data-tab="assurance" onclick="switchTab('assurance')">Assurance</div>
       <div class="tab" data-tab="stats" onclick="switchTab('stats')">Statistiques</div>
       <div class="tab" data-tab="reglages" onclick="switchTab('reglages')">Réglages</div>
@@ -233,16 +237,40 @@
     </div>
   </div>
 
+  <div class="view" id="view-rappels">
+    <div class="panel">
+      <div class="panel-title">Rappels de cotisation</div>
+      <p class="panel-sub">L'échéance de chaque judoka est calculée sur le jour de sa première séance. Cochez plusieurs judokas pour préparer une file d'envoi WhatsApp.</p>
+      <div id="rappelsQueueWrap"></div>
+      <h3 style="font-family:var(--disp);font-size:14px;margin:22px 0 10px;">⏳ Échéance dans 10 jours ou moins</h3>
+      <div id="rappelsDueSoonWrap"></div>
+      <h3 style="font-family:var(--disp);font-size:14px;margin:22px 0 10px;">🔴 Échéance aujourd'hui</h3>
+      <div id="rappelsDueTodayWrap"></div>
+      <h3 style="font-family:var(--disp);font-size:14px;margin:22px 0 10px;">✅ Payé aujourd'hui</h3>
+      <div id="rappelsPaidTodayWrap"></div>
+    </div>
+  </div>
+
   <div class="view" id="view-assurance">
     <div class="panel">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
         <div>
-          <div class="panel-title">Judokas assurées</div>
-          <p class="panel-sub" style="margin:2px 0 0;">Liste imprimable des judokas ayant réglé leur assurance.</p>
+          <div class="panel-title">✅ Assurées</div>
+          <p class="panel-sub" style="margin:2px 0 0;">Cliquez sur une judoka pour basculer son statut.</p>
         </div>
-        <button class="btn btn-outline btn-sm" onclick="printAssurance()">🖨 Imprimer la liste</button>
+        <button class="btn btn-outline btn-sm" onclick="printAssurance()">🖨 Imprimer la liste des assurées</button>
       </div>
       <div id="assuranceTableWrap"></div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <div>
+          <div class="panel-title">⛔ Non assurées</div>
+          <p class="panel-sub" style="margin:2px 0 0;">Cliquez sur une judoka pour basculer son statut.</p>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="printNonAssurance()">🖨 Imprimer la liste des non-assurées</button>
+      </div>
+      <div id="nonAssuranceTableWrap"></div>
     </div>
   </div>
 
@@ -434,21 +462,54 @@ function switchTab(name){
   document.getElementById('view-'+name).classList.add('active');
   document.getElementById('fabAdd').style.display = (name==='judokas') ? 'flex' : 'none';
   if(name==='judokas') renderJudokas();
+  if(name==='rappels') renderRappels();
   if(name==='assurance') renderAssurance();
   if(name==='stats') renderStats();
   if(name==='reglages') document.getElementById('cotisationInput').value = clubData.cotisation;
 }
 
+let dataLoadedOk = false;
+
 async function loadClubData(){
   try{
     clubData = await api('/api/data', {method:'GET'});
+    dataLoadedOk = true;
   }catch(e){
-    showToast(e.message);
+    dataLoadedOk = false;
+    showLoadError(e.message);
+    return;
   }
   renderJudokas();
 }
 
+function showLoadError(msg){
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('fabAdd').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'none';
+  let el = document.getElementById('loadErrorScreen');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'loadErrorScreen';
+    el.style.cssText = 'min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--mat);';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<div class="login-card" style="max-width:420px;">
+    <div class="login-body" style="text-align:center;">
+      <div style="font-size:40px;">⚠️</div>
+      <h1 class="login-title" style="color:var(--aka-bright);font-size:20px;">Échec du chargement</h1>
+      <p class="login-sub">Impossible de récupérer les données du club depuis le serveur (connexion instable, ou le serveur redémarre après une période d'inactivité).<br><br>
+      <b>Ne rien modifier ni enregistrer maintenant</b> — cela pourrait effacer les judokas déjà enregistrés.<br>Rechargez la page et réessayez.</p>
+      <button class="btn" onclick="location.reload()">🔄 Recharger la page</button>
+    </div>
+  </div>`;
+  el.style.display = 'flex';
+}
+
 async function saveClubData(){
+  if(!dataLoadedOk){
+    alert("⚠️ Enregistrement bloqué : les données n'ont pas pu être chargées correctement au démarrage. Pour éviter d'effacer les judokas déjà enregistrés, rien n'a été envoyé.\n\nRechargez complètement la page et réessayez.");
+    return;
+  }
   try{
     await api('/api/data', {method:'PUT', body: JSON.stringify(clubData)});
   }catch(e){
@@ -531,7 +592,7 @@ function openJudokaModal(id){
     document.getElementById('dm_certificat').checked = dm.includes('certificat');
     updateCategoriePreview();
     toggleDossierManquant();
-    document.getElementById('photoBox').innerHTML = `<img src="/uploads/${id}.jpg?t=${Date.now()}" onerror="this.parentNode.innerHTML='📷'">`;
+    document.getElementById('photoBox').innerHTML = j.photo ? `<img src="${j.photo}">` : '📷';
   } else {
     ['f_nom','f_prenom','f_dateNaissance','f_lieuNaissance','f_tuteurNom','f_tuteurTel','f_dateDebut'].forEach(id2=>document.getElementById(id2).value='');
     document.querySelector('input[name="f_assurance"][value="Non"]').checked = true;
@@ -601,11 +662,9 @@ async function saveJudoka(){
   judoka.assurance = document.querySelector('input[name="f_assurance"]:checked').value;
   judoka.dossierComplet = dossierComplet;
   judoka.dossierManquant = dossierManquant;
+  if(pendingPhotoDataUrl){ judoka.photo = pendingPhotoDataUrl; }
 
   await saveClubData();
-  if(pendingPhotoDataUrl){
-    try{ await api('/api/judokas/'+id+'/photo', {method:'POST', body: JSON.stringify({dataUrl: pendingPhotoDataUrl})}); }catch(e){}
-  }
   showToast(editingJudokaId ? "Fiche mise à jour" : "Judoka ajoutée");
   closeJudokaModal();
   renderJudokas();
@@ -615,7 +674,6 @@ async function deleteJudoka(){
   if(!editingJudokaId) return;
   clubData.judokas = clubData.judokas.filter(x=>x.id!==editingJudokaId);
   await saveClubData();
-  try{ await api('/api/judokas/'+editingJudokaId+'/photo', {method:'DELETE'}); }catch(e){}
   showToast("Judoka supprimée");
   closeJudokaModal();
   renderJudokas();
@@ -668,22 +726,164 @@ async function togglePaiement(key){
   const j = clubData.judokas.find(x=>x.id===currentPayJudokaId);
   if(!j) return;
   if(!j.paiements) j.paiements = {};
-  j.paiements[key] = !j.paiements[key];
+  if(!j.paiementsDates) j.paiementsDates = {};
+  const nowPaid = !j.paiements[key];
+  j.paiements[key] = nowPaid;
+  if(nowPaid) j.paiementsDates[key] = new Date().toISOString().slice(0,10);
+  else delete j.paiementsDates[key];
   await saveClubData();
   renderPayGrid();
 }
 
 function renderAssurance(){
-  const wrap = document.getElementById('assuranceTableWrap');
-  const list = clubData.judokas.filter(j=>j.assurance==='Oui').sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
-  if(list.length===0){
-    wrap.innerHTML = '<div class="empty-state"><div class="big">🛡️</div>Aucune judoka assurée pour le moment.</div>';
-    return;
+  const insWrap = document.getElementById('assuranceTableWrap');
+  const nonInsWrap = document.getElementById('nonAssuranceTableWrap');
+  const insured = clubData.judokas.filter(j=>j.assurance==='Oui').sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+  const notInsured = clubData.judokas.filter(j=>j.assurance!=='Oui').sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
+
+  if(insured.length===0){
+    insWrap.innerHTML = '<div class="empty-state"><div class="big">🛡️</div>Aucune judoka assurée pour le moment.</div>';
+  } else {
+    insWrap.innerHTML = `<table><thead><tr><th>Nom</th><th>Prénom</th><th>Naissance</th><th>Statut</th></tr></thead><tbody>
+      ${insured.map(j=>`<tr class="row-click" onclick="toggleAssurance('${j.id}')">
+        <td>${j.nom}</td><td>${j.prenom}</td><td>${fmtDate(j.dateNaissance)}</td>
+        <td><span class="pill pill-oui">Payée</span></td>
+      </tr>`).join('')}
+    </tbody></table>`;
   }
+
+  if(notInsured.length===0){
+    nonInsWrap.innerHTML = '<div class="empty-state"><div class="big">✅</div>Toutes les judokas ont réglé leur assurance.</div>';
+  } else {
+    nonInsWrap.innerHTML = `<table><thead><tr><th>Nom</th><th>Prénom</th><th>Naissance</th><th>Statut</th></tr></thead><tbody>
+      ${notInsured.map(j=>`<tr class="row-click" onclick="toggleAssurance('${j.id}')">
+        <td>${j.nom}</td><td>${j.prenom}</td><td>${fmtDate(j.dateNaissance)}</td>
+        <td><span class="pill pill-non">Non payée</span></td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+}
+
+async function toggleAssurance(id){
+  const j = clubData.judokas.find(x=>x.id===id);
+  if(!j) return;
+  j.assurance = (j.assurance==='Oui') ? 'Non' : 'Oui';
+  await saveClubData();
+  showToast(j.assurance==='Oui' ? 'Assurance marquée payée.' : 'Assurance marquée non payée.');
+  renderAssurance();
+}
+
+function printNonAssurance(){
+  const list = clubData.judokas.filter(j=>j.assurance!=='Oui').sort((a,b)=>(a.nom||'').localeCompare(b.nom||''));
   let rows = list.map(j=>`
     <tr><td>${j.nom}</td><td>${j.prenom}</td><td>${j.tuteurNom||'—'}</td>
       <td>${fmtDate(j.dateNaissance)}${j.lieuNaissance?(' — '+j.lieuNaissance):''}</td></tr>`).join('');
-  wrap.innerHTML = `<table><thead><tr><th>Nom</th><th>Prénom</th><th>Père / Tuteur</th><th>Date et lieu de naissance</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('printArea').innerHTML = `
+    <div class="pprint">
+      <h1>Liste des judokas non assurées</h1>
+      <div class="sub">USOM Halaimiya — Judo — Coach Hadil — ${new Date().toLocaleDateString('fr-FR')}</div>
+      <table><thead><tr><th>Nom</th><th>Prénom</th><th>Père / Tuteur</th><th>Date et lieu de naissance</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+    </div>`;
+  window.print();
+}
+
+/* ================= RAPPELS (WhatsApp) ================= */
+let rappelSelected = [];
+const MONTH_FULL = {sept:'Septembre',oct:'Octobre',nov:'Novembre',dec:'Décembre',jan:'Janvier',fev:'Février',mar:'Mars',avr:'Avril',mai:'Mai',juin:'Juin',juil:'Juillet'};
+
+function waLink(tel, text){
+  if(!tel) return null;
+  let n = String(tel).replace(/[^0-9+]/g,'');
+  if(n.startsWith('+')) n = n.slice(1);
+  if(n.startsWith('00')) n = n.slice(2);
+  if(n.startsWith('0')) n = '213' + n.slice(1);
+  if(!n.startsWith('213')) n = '213' + n;
+  if(n.length < 10) return null;
+  return 'https://wa.me/' + n + '?text=' + encodeURIComponent(text);
+}
+
+function computeReminders(){
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0,10);
+  const dueSoon = [], dueToday = [], paidToday = [];
+  clubData.judokas.forEach(j=>{
+    if(!j.dateDebut) return;
+    const months = getSeasonMonthsFor(j.dateDebut);
+    const cur = months.find(mo => mo.applicable && mo.y===now.getFullYear() && mo.m===(now.getMonth()+1));
+    if(!cur) return;
+    const paid = !!(j.paiements && j.paiements[cur.key]);
+    if(paid){
+      if(j.paiementsDates && j.paiementsDates[cur.key]===todayStr) paidToday.push({...j, _monthLabel: MONTH_FULL[cur.key]});
+      return;
+    }
+    const diffDays = Math.round((cur.dueDate - now) / (1000*60*60*24));
+    if(diffDays===0) dueToday.push({...j, _monthLabel: MONTH_FULL[cur.key]});
+    else if(diffDays>=1 && diffDays<=10) dueSoon.push({...j, _monthLabel: MONTH_FULL[cur.key], _daysRemaining: diffDays});
+  });
+  return {dueSoon, dueToday, paidToday};
+}
+
+function renderRappels(){
+  const r = computeReminders();
+
+  const msgDueSoon = j => `السلام عليكم، تذكير بخصوص اشتراك شهر ${j._monthLabel} الخاص بـ ${j.prenom} ${j.nom} بنادي USOM Halaimiya.\nمتبقّي ${j._daysRemaining} أيام على آخر أجل للتسديد. شكراً لتعاونكم.`;
+  const msgDueToday = j => `السلام عليكم، تذكير بخصوص اشتراك شهر ${j._monthLabel} الخاص بـ ${j.prenom} ${j.nom} بنادي USOM Halaimiya.\nاليوم هو آخر أجل للتسديد. شكراً لتعاونكم.`;
+  const msgPaidToday = j => `السلام عليكم، بخصوص اشتراك شهر ${j._monthLabel} الخاص بـ ${j.prenom} ${j.nom} بنادي USOM Halaimiya.\nنشكركم على التسديد. بالتوفيق!`;
+
+  const allEntries = {};
+  r.dueSoon.forEach(j=>{ allEntries[j.id] = {j, text: msgDueSoon(j)}; });
+  r.dueToday.forEach(j=>{ allEntries[j.id] = {j, text: msgDueToday(j)}; });
+  r.paidToday.forEach(j=>{ allEntries[j.id] = {j, text: msgPaidToday(j)}; });
+  const selected = rappelSelected.filter(id=>allEntries[id]);
+
+  function rowsFor(list, msgBuilder, emptyText){
+    if(list.length===0) return `<div class="empty-state" style="padding:24px;">${emptyText}</div>`;
+    return `<table><thead><tr><th></th><th>Nom</th><th>Prénom</th><th>Tuteur</th><th>Téléphone</th><th></th></tr></thead><tbody>
+      ${list.map(j=>{
+        const text = msgBuilder(j);
+        const link = waLink(j.tuteurTel, text);
+        const checked = rappelSelected.includes(j.id);
+        return `<tr>
+          <td><input type="checkbox" onchange="toggleRappelSelect('${j.id}', this.checked)" ${checked?'checked':''}/></td>
+          <td>${j.nom}</td><td>${j.prenom}</td><td>${j.tuteurNom||'—'}</td><td>${j.tuteurTel||'—'}</td>
+          <td>${link ? `<a href="${link}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">📲 WhatsApp</a>` : `<span style="color:var(--muted);font-size:12px;">Pas de téléphone</span>`}</td>
+        </tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }
+
+  document.getElementById('rappelsDueSoonWrap').innerHTML = rowsFor(r.dueSoon, msgDueSoon, 'Aucun rappel à envoyer pour le moment.');
+  document.getElementById('rappelsDueTodayWrap').innerHTML = rowsFor(r.dueToday, msgDueToday, "Aucune judoka concernée aujourd'hui.");
+  document.getElementById('rappelsPaidTodayWrap').innerHTML = rowsFor(r.paidToday, msgPaidToday, "Aucun paiement enregistré aujourd'hui.");
+
+  const queueWrap = document.getElementById('rappelsQueueWrap');
+  if(selected.length===0){
+    queueWrap.innerHTML = '';
+  } else {
+    queueWrap.innerHTML = `
+      <div class="section-label" style="margin-top:0;">File d'envoi — ${selected.length} sélectionné(s)</div>
+      <table><thead><tr><th>Nom</th><th>Prénom</th><th>Téléphone</th><th></th><th></th></tr></thead><tbody>
+        ${selected.map(id=>{
+          const {j, text} = allEntries[id];
+          const link = waLink(j.tuteurTel, text);
+          return `<tr>
+            <td>${j.nom}</td><td>${j.prenom}</td><td>${j.tuteurTel||'—'}</td>
+            <td>${link ? `<a href="${link}" target="_blank" rel="noopener" class="btn btn-sm">📲 Envoyer</a>` : `<span style="color:var(--muted);font-size:12px;">Pas de téléphone</span>`}</td>
+            <td><button class="btn btn-outline btn-sm" onclick="toggleRappelSelect('${j.id}', false); renderRappels();">✕ Retirer</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody></table>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px;" onclick="rappelSelected=[]; renderRappels();">Vider la sélection</button>
+    `;
+  }
+}
+
+function toggleRappelSelect(id, checked){
+  const i = rappelSelected.indexOf(id);
+  if(checked && i<0) rappelSelected.push(id);
+  if(!checked && i>=0) rappelSelected.splice(i,1);
+  renderRappels();
 }
 
 function printAssurance(){
