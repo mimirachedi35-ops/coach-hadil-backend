@@ -56,7 +56,7 @@ function authRequired(req, res, next) {
 app.post('/api/login', (req, res) => {
   const { code } = req.body || {};
   if (code !== ACCESS_CODE) return res.status(401).json({ error: 'Code incorrect.' });
-  const token = jwt.sign({ role: 'coach' }, JWT_SECRET, { expiresIn: '90d' });
+  const token = jwt.sign({ role: 'coach' }, JWT_SECRET, { expiresIn: '365d' });
   res.json({ token });
 });
 
