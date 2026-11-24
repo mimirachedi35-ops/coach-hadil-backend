@@ -415,8 +415,23 @@ async function api(path, opts={}){
   const res = await fetch(API + path, Object.assign({}, opts, {headers}));
   let data = null;
   try{ data = await res.json(); }catch(e){}
-  if(!res.ok){ throw new Error((data && data.error) || 'Erreur serveur'); }
+  if(!res.ok){
+    if(res.status === 401 && path !== '/api/login'){
+      sessionExpired();
+      const er = new Error('Session expirée. Veuillez vous reconnecter.');
+      er.code = 'AUTH';
+      throw er;
+    }
+    throw new Error((data && data.error) || 'Erreur serveur');
+  }
   return data;
+}
+
+function sessionExpired(){
+  logout();
+  const err = document.getElementById('loginError');
+  err.textContent = "Session expirée. Entrez à nouveau votre code d'accès.";
+  err.style.display = 'block';
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -452,6 +467,8 @@ function logout(){
   authToken = '';
   document.getElementById('app').style.display = 'none';
   document.getElementById('fabAdd').style.display = 'none';
+  const le = document.getElementById('loadErrorScreen');
+  if(le) le.style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('loginCode').value = '';
 }
@@ -476,6 +493,7 @@ async function loadClubData(){
     dataLoadedOk = true;
   }catch(e){
     dataLoadedOk = false;
+    if(e.code === 'AUTH') return; // session expirée : on revient à l'écran de connexion
     showLoadError(e.message);
     return;
   }
